@@ -54,11 +54,12 @@ export function AppDownload(): JSX.Element {
 
               <div className="flex flex-wrap gap-3">
                 {STORE_BADGES.map((badge) => (
-                  <a
+                  <button
                     key={badge.label}
-                    href="#"
-                    aria-disabled="true"
-                    className="flex items-center gap-3 rounded-2xl border-2 border-cream/40 px-4 py-2.5 text-left opacity-80"
+                    type="button"
+                    disabled
+                    aria-label={`${badge.label} — ${badge.sub}`}
+                    className="flex items-center gap-3 rounded-2xl border-2 border-cream/40 px-4 py-2.5 text-left opacity-80 cursor-not-allowed"
                   >
                     <span className="text-xl" aria-hidden>
                       ⬇️
@@ -69,7 +70,7 @@ export function AppDownload(): JSX.Element {
                       </span>
                       <span className="block font-bold">{badge.label}</span>
                     </span>
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>

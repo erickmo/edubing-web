@@ -62,6 +62,7 @@ export function Navbar(): JSX.Element {
           type="button"
           className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-ink/15 text-ink md:hidden"
           aria-expanded={open}
+          aria-controls="mobile-menu"
           aria-label={open ? "Tutup menu" : "Buka menu"}
           onClick={() => setOpen((v) => !v)}
         >
@@ -90,7 +91,7 @@ export function Navbar(): JSX.Element {
 
       {/* Mobile menu */}
       {open && (
-        <div className="border-t-2 border-ink/10 bg-cream px-4 py-4 md:hidden">
+        <div id="mobile-menu" className="border-t-2 border-ink/10 bg-cream px-4 py-4 md:hidden">
           <div className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => (
               <Link

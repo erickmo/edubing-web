@@ -90,7 +90,7 @@ export function EventDetailHero({ event }: EventDetailHeroProps): JSX.Element {
                 seatsFull
                   ? "text-red-300"
                   : seatsLow
-                  ? "text-sun-300"
+                  ? "text-sun"
                   : "text-white",
               ].join(" ")}
             >

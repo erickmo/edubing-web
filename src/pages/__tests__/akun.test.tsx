@@ -73,6 +73,32 @@ const ROW_PENDING: RegistrationRow = {
   registration_date: "2025-08-05T11:00:00",
 };
 
+const ROW_ATTENDED: RegistrationRow = {
+  registration: "REG-003",
+  event: "EV-003",
+  event_title: "Seminar Data Science",
+  event_route: "seminar-data-science",
+  start_date: "2025-07-01T09:00:00",
+  event_type: "offline",
+  price: 200_000,
+  status: "Attended",
+  order_status: "Paid",
+  registration_date: "2025-06-01T10:00:00",
+};
+
+const ROW_CANCELLED: RegistrationRow = {
+  registration: "REG-004",
+  event: "EV-004",
+  event_title: "Workshop Node.js",
+  event_route: "workshop-nodejs",
+  start_date: "2025-06-15T09:00:00",
+  event_type: "workshop",
+  price: 100_000,
+  status: "Cancelled",
+  order_status: "Failed",
+  registration_date: "2025-05-01T10:00:00",
+};
+
 // ─── Helper render ────────────────────────────────────────────────────────────
 
 import Akun from "../Akun";
@@ -210,5 +236,49 @@ describe("Akun — empty state", () => {
     renderPage();
     const link = screen.getByRole("link", { name: /ikut event/i });
     expect(link).toHaveAttribute("href", "/events");
+  });
+});
+
+// ─── Uji 5: Badge Attended + tombol Batalkan TIDAK ada ───────────────────────
+
+describe("Akun — status Attended", () => {
+  beforeEach(() => {
+    mockUseMyRegistrations.mockReturnValue({
+      data: [ROW_ATTENDED],
+      isLoading: false,
+      isError: false,
+    });
+  });
+
+  it('menampilkan badge "Hadir" untuk status Attended', () => {
+    renderPage();
+    expect(screen.getByText("Hadir")).toBeInTheDocument();
+  });
+
+  it("tombol Batalkan tidak muncul untuk status Attended", () => {
+    renderPage();
+    expect(screen.queryByRole("button", { name: /batalkan/i })).toBeNull();
+  });
+});
+
+// ─── Uji 6: Badge Cancelled + tombol Batalkan TIDAK ada ─────────────────────
+
+describe("Akun — status Cancelled", () => {
+  beforeEach(() => {
+    mockUseMyRegistrations.mockReturnValue({
+      data: [ROW_CANCELLED],
+      isLoading: false,
+      isError: false,
+    });
+  });
+
+  it('menampilkan badge "Dibatalkan" untuk status Cancelled', () => {
+    renderPage();
+    expect(screen.getByText("Dibatalkan")).toBeInTheDocument();
+  });
+
+  it("tombol Batalkan tidak muncul untuk status Cancelled", () => {
+    renderPage();
+    expect(screen.queryByRole("button", { name: /batalkan/i })).toBeNull();
   });
 });

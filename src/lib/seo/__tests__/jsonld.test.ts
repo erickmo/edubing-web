@@ -63,12 +63,13 @@ describe("websiteLd()", () => {
     expect(action["@type"]).toBe("SearchAction");
   });
 
-  it("potentialAction target points to /events search", () => {
+  it("potentialAction target is a string URL pointing to /events search", () => {
     const ld = websiteLd() as Record<string, unknown>;
     const action = ld["potentialAction"] as Record<string, unknown>;
-    const target = action["target"] as Record<string, unknown>;
-    expect(target["urlTemplate"]).toContain("/events");
-    expect(target["urlTemplate"]).toContain("{search_term_string}");
+    const target = action["target"] as string;
+    expect(typeof target).toBe("string");
+    expect(target).toContain("/events");
+    expect(target).toContain("{search_term_string}");
   });
 });
 
@@ -183,6 +184,39 @@ describe("eventLd() — kompetisi event", () => {
 
   it("offers.availability is InStock when seats available", () => {
     const ld = eventLd(kompetisiInput) as Record<string, unknown>;
+    const offers = ld["offers"] as Record<string, unknown>;
+    expect(offers["availability"]).toBe("https://schema.org/InStock");
+  });
+});
+
+describe("eventLd() — workshop event", () => {
+  const workshopInput = {
+    name: "Workshop UI Design 2025",
+    slug: "workshop-ui-design-2025",
+    short_description: "Workshop desain UI hybrid online dan tatap muka",
+    start_date: "2025-11-01T09:00:00",
+    end_date: "2025-11-01T17:00:00",
+    location: "Gedung Edubing, Jakarta",
+    price: 350000,
+    event_type: "workshop" as const,
+    remaining_seats: 20,
+  };
+
+  it("eventAttendanceMode is MixedEventAttendanceMode", () => {
+    const ld = eventLd(workshopInput) as Record<string, unknown>;
+    expect(ld["eventAttendanceMode"]).toBe(
+      "https://schema.org/MixedEventAttendanceMode"
+    );
+  });
+
+  it("location is Place", () => {
+    const ld = eventLd(workshopInput) as Record<string, unknown>;
+    const loc = ld["location"] as Record<string, unknown>;
+    expect(loc["@type"]).toBe("Place");
+  });
+
+  it("offers.availability is InStock when seats available", () => {
+    const ld = eventLd(workshopInput) as Record<string, unknown>;
     const offers = ld["offers"] as Record<string, unknown>;
     expect(offers["availability"]).toBe("https://schema.org/InStock");
   });

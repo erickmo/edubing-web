@@ -72,13 +72,14 @@ export function Footer(): JSX.Element {
           <ul className="mt-4 space-y-2">
             {SOCIALS.map((name) => (
               <li key={name}>
-                <a
-                  href="#"
-                  aria-disabled="true"
-                  className="text-sm text-cream/65 transition-colors hover:text-brand-300"
+                <button
+                  type="button"
+                  disabled
+                  aria-label={`${name} — segera hadir`}
+                  className="cursor-not-allowed text-sm text-cream/65"
                 >
                   {name}
-                </a>
+                </button>
               </li>
             ))}
           </ul>

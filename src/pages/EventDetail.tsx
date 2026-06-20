@@ -5,7 +5,7 @@
  * At runtime, React Query re-fetches for live seat counts and pricing.
  */
 
-import { useParams, useLoaderData } from "react-router-dom";
+import { useParams, useLoaderData, Link } from "react-router-dom";
 import { Navbar } from "../components/layout/Navbar";
 import { Footer } from "../components/layout/Footer";
 import { Seo } from "../components/Seo";
@@ -54,6 +54,12 @@ export default function EventDetail(): JSX.Element {
           <p className="text-ink-soft">
             Event yang kamu cari mungkin sudah berakhir atau tidak tersedia.
           </p>
+          <Link
+            to="/events"
+            className="text-brand-600 underline hover:text-brand-700"
+          >
+            Lihat semua event
+          </Link>
         </main>
         <Footer />
       </>
@@ -66,7 +72,7 @@ export default function EventDetail(): JSX.Element {
     eventLd({
       name: event.title,
       slug: event.route,
-      short_description: event.short_description,
+      short_description: event.short_description ?? undefined,
       start_date: event.start_date,
       end_date: event.end_date,
       location: event.location,

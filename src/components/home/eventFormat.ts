@@ -52,6 +52,9 @@ export function is_sold_out(remaining_seats: number | null): boolean {
   return remaining_seats === 0;
 }
 
+/** Threshold below which remaining seats trigger urgency/red styling. */
+const LOW_SEATS_THRESHOLD = 10;
+
 /**
  * Returns `true` when remaining seats are low enough to show urgency styling.
  * Unlimited capacity (`null`) is never considered "low" — never show urgency.
@@ -63,9 +66,6 @@ export function is_seats_low(
 ): boolean {
   return remaining_seats !== null && remaining_seats > 0 && remaining_seats <= threshold;
 }
-
-/** Threshold below which remaining seats trigger urgency/red styling. */
-const LOW_SEATS_THRESHOLD = 10;
 
 /**
  * Human-readable Bahasa Indonesia label for the remaining-seats state.

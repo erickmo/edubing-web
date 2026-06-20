@@ -37,8 +37,10 @@ export interface PublicEvent {
    * - `N > 0` → N seats still available.
    */
   remaining_seats: number | null;
-  featured_image: string;
-  short_description: string;
+  /** Cover image URL; null when the API returns null (not yet set). */
+  featured_image: string | null;
+  /** Brief description; null when the API returns null (not yet set). */
+  short_description: string | null;
 }
 
 const METHOD_LIST = "vernon_edubing.eb_event.api.public.list_events";
