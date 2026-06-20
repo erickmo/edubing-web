@@ -47,7 +47,11 @@ export const routes: RouteRecord[] = [
         element: <EventDetail />,
         getStaticPaths: async () => {
           const events = await fetchAllEventsAtBuild();
-          return events.map((e) => `events/${e.route}`);
+          // Filter out events without a route slug so we never generate a
+          // broken path like "events/undefined" or "events/".
+          return events
+            .filter((e) => Boolean(e.route))
+            .map((e) => `events/${e.route}`);
         },
         loader: async ({ params }: { params: Record<string, string | undefined> }) => {
           if (typeof window !== "undefined") return null;
