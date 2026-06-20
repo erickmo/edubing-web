@@ -1,3 +1,58 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+    /* Subtle warm atmosphere instead of flat white */
+    background-image: radial-gradient(
+        circle at 12% -4%,
+        rgba(255, 200, 87, 0.16),
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at 92% 6%,
+        rgba(22, 163, 125, 0.12),
+        transparent 40%
+      );
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight text-ink;
+  }
+
+  /* Accessible, on-brand focus ring everywhere */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-cream;
+  }
+}
+
+@layer components {
+  /* Hand-drawn-style highlight under a word in headlines */
+  .underline-sketch {
+    background-image: linear-gradient(
+      transparent 62%,
+      theme("colors.sun.DEFAULT") 62%
+    );
+    background-size: 100% 88%;
+    background-repeat: no-repeat;
+    padding: 0 0.1em;
+  }
+
+  /* Sticker chip used for badges + eyebrow labels */
+  .sticker {
+    @apply inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-cream px-3 py-1 text-sm font-bold;
+  }
+}
