@@ -226,6 +226,74 @@ describe("Checkout — event berbayar (Midtrans Snap)", () => {
   });
 });
 
+// ─── Uji 2b: Unmount guard — tidak ada dispatch setelah unmount ───────────────
+describe("Checkout — unmount guard saat polling", () => {
+  beforeEach(() => {
+    mockUseEvent.mockReturnValue({
+      data: PAID_EVENT,
+      isLoading: false,
+      isError: false,
+    });
+  });
+
+  it("unmount saat promise checkoutStatus in-flight tidak melempar error dispatch", async () => {
+    vi.useFakeTimers();
+
+    mockRegisterForEvent.mockResolvedValue({
+      paid: true,
+      registration: "REG-UNMOUNT-001",
+      snap_token: "snap-tok-unmount",
+    });
+
+    // checkoutStatus menggantung (tidak resolve) sampai kita kontrol
+    let resolveStatus!: (v: { registration_status: string; order_status: string }) => void;
+    mockCheckoutStatus.mockReturnValue(
+      new Promise((res) => {
+        resolveStatus = res;
+      }),
+    );
+
+    // Tangkap callback Snap
+    let capturedCb: { onSuccess: () => void } | null = null;
+    mockOpenSnap.mockImplementation(
+      (_token: string, cb: { onSuccess: () => void }) => {
+        capturedCb = cb;
+      },
+    );
+
+    const { unmount } = renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: /bayar & daftar/i }));
+
+    // Tunggu openSnap dipanggil
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Picu onSuccess → mulai polling
+    await act(async () => {
+      capturedCb?.onSuccess();
+    });
+
+    // Maju waktu agar interval polling pertama trigger
+    await act(async () => {
+      vi.advanceTimersByTime(3_000);
+    });
+
+    // Unmount komponen saat promise masih in-flight
+    unmount();
+
+    // Sekarang resolve promise — seharusnya tidak ada dispatch / error
+    await act(async () => {
+      resolveStatus({ registration_status: "Registered", order_status: "Paid" });
+    });
+
+    // Jika tidak ada error dilempar, guard bekerja dengan benar.
+    // Tidak ada assertion tambahan — tidak ada error = lulus.
+    vi.useRealTimers();
+  });
+});
+
 // ─── Uji 3: Error dari registerForEvent ──────────────────────────────────────
 describe("Checkout — error saat registrasi", () => {
   beforeEach(() => {

@@ -65,6 +65,9 @@ export default function Checkout(): JSX.Element {
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCountRef = useRef(0);
 
+  // Ref untuk melacak apakah komponen masih terpasang — mencegah dispatch setelah unmount.
+  const mountedRef = useRef(true);
+
   /** Hentikan polling yang sedang berjalan. */
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current !== null) {
@@ -85,12 +88,15 @@ export default function Checkout(): JSX.Element {
 
         if (pollCountRef.current > POLL_MAX_TRIES) {
           stopPolling();
+          if (!mountedRef.current) return;
           dispatch({ type: "FAIL", message: MSG_POLL_TIMEOUT });
           return;
         }
 
         try {
           const status = await checkoutStatus(registration);
+          if (!mountedRef.current) return;
+
           const isRegistered = status.registration_status === "Registered";
           const isPaid = status.order_status === "Paid";
 
@@ -106,8 +112,14 @@ export default function Checkout(): JSX.Element {
     [stopPolling],
   );
 
-  // Bersihkan timer saat unmount untuk mencegah memory leak.
-  useEffect(() => () => stopPolling(), [stopPolling]);
+  // Bersihkan timer dan tandai unmount untuk mencegah dispatch setelah unmount.
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+      stopPolling();
+    },
+    [stopPolling],
+  );
 
   /** Handler CTA utama — daftar dan/atau bayar. */
   const handleRegister = useCallback(async () => {
@@ -238,7 +250,7 @@ export default function Checkout(): JSX.Element {
             <PaymentStatus state={state} onReset={handleReset} />
 
             {/* Catatan jika pengguna menutup popup Snap */}
-            {state.phase === "idle" && isBusy === false && (
+            {state.phase === "idle" && (
               <p className="text-center text-xs text-ink-soft/70">
                 Jika popup pembayaran tertutup, klik tombol di atas untuk
                 mencoba kembali.
