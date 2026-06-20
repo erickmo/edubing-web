@@ -58,8 +58,7 @@ describe("frappeCall", () => {
       (e: unknown) =>
         e instanceof FrappeError &&
         e.status === 500 &&
-        typeof e.message === "string" &&
-        e.message.length > 0,
+        e.message === "Terjadi kesalahan. Coba lagi.",
     );
   });
 
@@ -91,6 +90,22 @@ describe("frappeCall", () => {
 
     setCsrfToken(null);
     await frappeCall("test.nocsrf");
+
+    expect(capturedToken).toBeNull();
+  });
+
+  it("omits X-Frappe-CSRF-Token header on GET even when token is set", async () => {
+    let capturedToken: string | null = "present";
+
+    server.use(
+      http.get(`${BASE}/api/method/test.getnocsrf`, ({ request }) => {
+        capturedToken = request.headers.get("x-frappe-csrf-token");
+        return HttpResponse.json({ message: "ok" });
+      }),
+    );
+
+    setCsrfToken("test-csrf-abc");
+    await frappeCall("test.getnocsrf", {}, { method: "GET" });
 
     expect(capturedToken).toBeNull();
   });

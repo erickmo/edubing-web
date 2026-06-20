@@ -22,16 +22,25 @@ export function getCsrfToken(): string | null {
 }
 
 /**
- * Parse Frappe _server_messages into a human-readable string.
+ * Parse Frappe _server_messages into human-readable strings.
  * _server_messages is a JSON-stringified array of JSON strings.
  * Each element: { message: string, title?: string }
+ *
+ * Returns an array of extracted message strings, or null if parsing fails
+ * or produces no results.
  */
-function parseServerMessages(raw: string): string | null {
+function parseServerMessages(raw: string): string[] | null {
   try {
     const outer = JSON.parse(raw) as unknown[];
     if (!Array.isArray(outer) || outer.length === 0) return null;
-    const first = JSON.parse(outer[0] as string) as { message?: string };
-    return typeof first.message === "string" ? first.message : null;
+    const messages: string[] = [];
+    for (const item of outer) {
+      const parsed = JSON.parse(item as string) as { message?: string };
+      if (typeof parsed.message === "string") {
+        messages.push(parsed.message);
+      }
+    }
+    return messages.length > 0 ? messages : null;
   } catch {
     return null;
   }
@@ -90,14 +99,17 @@ export async function frappeCall<T = unknown>(
   if (!res.ok) {
     const rawServerMsgs = body._server_messages as string | undefined;
     let userMessage = GENERIC_ERROR_MSG;
+    let serverMessages: string[] | undefined;
 
     if (rawServerMsgs) {
       const parsed = parseServerMessages(rawServerMsgs);
-      if (parsed) userMessage = parsed;
+      if (parsed) {
+        userMessage = parsed[0];
+        serverMessages = parsed;
+      }
     }
 
-    const msgs = rawServerMsgs ? [rawServerMsgs] : undefined;
-    throw new FrappeError(userMessage, res.status, msgs);
+    throw new FrappeError(userMessage, res.status, serverMessages);
   }
 
   return (body as { message: T }).message;
