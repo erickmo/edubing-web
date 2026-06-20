@@ -1,0 +1,45 @@
+# robots.txt — Edubing (https://app.edubing.id)
+# We welcome all crawlers, including AI agents.
+# Marketing pages, events, and learning content are fully indexable.
+# Only private/transactional paths are restricted.
+
+User-agent: *
+Allow: /
+Disallow: /akun
+Disallow: /checkout
+
+# ── AI Crawlers — explicitly welcomed ──────────────────────────────────────
+# GPTBot (OpenAI)
+User-agent: GPTBot
+Allow: /
+
+# OAI-SearchBot (OpenAI search)
+User-agent: OAI-SearchBot
+Allow: /
+
+# PerplexityBot
+User-agent: PerplexityBot
+Allow: /
+
+# ClaudeBot (Anthropic)
+User-agent: ClaudeBot
+Allow: /
+
+# Claude-Web (Anthropic)
+User-agent: Claude-Web
+Allow: /
+
+# Google-Extended (Gemini/Bard training)
+User-agent: Google-Extended
+Allow: /
+
+# Bingbot (Microsoft)
+User-agent: Bingbot
+Allow: /
+
+# Applebot-Extended (Apple AI)
+User-agent: Applebot-Extended
+Allow: /
+
+# ── Sitemap ────────────────────────────────────────────────────────────────
+Sitemap: https://app.edubing.id/sitemap.xml

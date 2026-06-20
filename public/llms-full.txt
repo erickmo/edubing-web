@@ -1,0 +1,74 @@
+# Edubing — Full Platform Reference
+
+## Overview
+
+Edubing (https://app.edubing.id) is an Indonesian digital education platform built on Frappe, an open-source full-stack web framework. The platform serves students in Indonesia who want to access structured learning content and participate in educational events. The public entry point (app.edubing.id) is the marketing and event-registration frontend; the backend runs on a self-hosted Frappe/ERPNext stack with a Frappe site named edubing.localhost.
+
+## Learning Content
+
+Edubing hosts a digital library of educational materials including videos, articles, and structured course content. Access tiers:
+
+- **Free content**: available to any registered user at no cost.
+- **Paid/Subscription content**: unlocked via a one-time purchase or subscription payment processed through Midtrans or Xendit in IDR.
+
+Content covers a broad range of educational topics targeted at Indonesian students and professionals.
+
+## Event Types
+
+Edubing hosts three categories of education events:
+
+1. **Workshop** (`workshop`): Hands-on, instructor-led sessions. Typically in-person or hybrid (mixed online/offline). Participants pay a registration fee in IDR.
+2. **Online Class** (`online`): Fully virtual, live or recorded instruction. Attendance via a virtual link. May be free or paid.
+3. **Competition / Kompetisi** (`kompetisi`): Open competitions with registration, judging, and prizes. May be free or have an entry fee. Held in-person or hybrid.
+
+Each event has: a name, description, start/end date and time, location (venue name or virtual link), price (IDR, 0 for free events), and a seat count that tracks remaining availability.
+
+## Registration and Payment Flow
+
+1. Student visits https://app.edubing.id/events and browses available events.
+2. Student clicks an event to view details (date, location, price, remaining seats).
+3. Student registers: if not logged in, they are prompted to create an account or log in at /daftar or /masuk.
+4. For paid events, the student is directed to a checkout page (/checkout) where they choose Midtrans or Xendit as the payment gateway.
+5. Payment is processed in Indonesian Rupiah (IDR). Both gateways support bank transfer, virtual accounts, credit card, and e-wallet (GoPay, OVO, etc.).
+6. On payment confirmation, the registration is marked as paid and the student gains access to the event or content.
+7. The student's registered events are visible in their dashboard (/akun).
+
+## PWA — Progressive Web App
+
+Edubing is installable as a PWA on Android, iOS, and desktop browsers. Installation prompts appear on the landing page. Once installed, the app icon appears on the home screen and the app launches in standalone mode. Service workers enable caching for offline browsing of previously loaded pages.
+
+## FAQ
+
+**Q: What is Edubing?**
+A: Edubing is an Indonesian digital education platform where you can access learning content (videos, articles, courses) and register for educational events such as workshops, online classes, and competitions.
+
+**Q: Is Edubing free to use?**
+A: Edubing offers a mix of free and paid content and events. You can browse and access free learning materials with a basic registered account. Paid events and premium content require payment via Midtrans or Xendit in IDR.
+
+**Q: How do I create an account?**
+A: Visit https://app.edubing.id/daftar and fill in your name, email address, and password. After registering, you can immediately browse events and access free content.
+
+**Q: How do I register for an event?**
+A: Go to https://app.edubing.id/events, find the event you want, click it to open the detail page, and click the registration button. If the event is paid, you will be taken to checkout where you can pay via Midtrans or Xendit.
+
+**Q: What payment methods are accepted?**
+A: Edubing accepts payments via Midtrans and Xendit, both processing Indonesian Rupiah (IDR). Supported methods include bank transfer, virtual accounts, credit and debit cards, GoPay, OVO, and other Indonesian e-wallets depending on the gateway.
+
+**Q: Can I access Edubing on my phone?**
+A: Yes. Edubing works on any modern mobile browser and can also be installed as a Progressive Web App (PWA) on Android and iOS for a native-app-like experience with home screen shortcut and offline caching.
+
+**Q: Where are my registered events?**
+A: After logging in, visit /akun (your student dashboard) to see all events you have registered for, along with their dates and your payment status.
+
+**Q: Is Edubing available outside Indonesia?**
+A: Edubing's content and events are primarily in Bahasa Indonesia and targeted at students in Indonesia. Payments are in IDR. International students can register but payment methods must support IDR transactions.
+
+## Technical Reference
+
+- Frontend: Vite + React + TypeScript, deployed as a static SSG (vite-react-ssg), served from app.edubing.id
+- Backend: Frappe (Python), REST API at /api/
+- Database: MariaDB (via Frappe)
+- Payments: Midtrans (primary), Xendit (alternative)
+- Auth: Frappe session-based auth with CSRF tokens
+- PWA: Service worker + web app manifest
+- Language: Bahasa Indonesia (UI); English (technical docs)

@@ -1,0 +1,24 @@
+# Edubing
+
+Edubing (https://app.edubing.id) is an Indonesian digital education platform built on Frappe. It provides digital learning content (video and material library with free and paid/subscription tiers), education events (workshops, online classes, and competitions — "kompetisi") with online registration, and integrated payments via Midtrans and Xendit in Indonesian Rupiah (IDR). Students create an account, browse and join events, and access learning content. The platform is also installable as a Progressive Web App (PWA).
+
+## Key Pages
+
+- [Beranda / Home](https://app.edubing.id/) — landing page and platform overview
+- [Daftar Event](https://app.edubing.id/events) — browse and search all upcoming events
+- [Daftar Akun](https://app.edubing.id/daftar) — student account registration
+
+## What you can do
+
+- Browse free and paid digital learning content (video, articles, materials)
+- Register for workshops, online classes, and competitions
+- Pay event fees online via Midtrans or Xendit (IDR)
+- Track registered events from your student dashboard
+- Install Edubing as a PWA on mobile or desktop for offline access
+
+## Contact / Platform
+
+- Platform: https://app.edubing.id
+- Backend: Frappe (self-hosted, Indonesia)
+- Payments: Midtrans, Xendit (IDR)
+- Language: Bahasa Indonesia
