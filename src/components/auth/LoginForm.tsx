@@ -14,8 +14,7 @@
 import { useState, useCallback } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { login, getLoggedUser } from "../../lib/frappe/auth";
-import { getCsrfToken } from "../../lib/frappe/client";
-import { FrappeError } from "../../lib/frappe/client";
+import { getCsrfToken, FrappeError } from "../../lib/frappe/client";
 import { useSession } from "../../store/session";
 import { safe_redirect } from "../../lib/auth/redirect";
 import { Button } from "../ui/Button";

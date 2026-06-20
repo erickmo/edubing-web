@@ -179,6 +179,32 @@ describe("safe_redirect", () => {
   it('memblokir HTTPS eksternal → "/akun"', () => {
     expect(safe_redirect("https://evil.com/steal")).toBe("/akun");
   });
+
+  // ── Bypass hardening (Task 11 fix) ──────────────────────────────────────────
+
+  it('memblokir URL-encoded "//" → "/%2F%2Fevil.com" → "/akun"', () => {
+    expect(safe_redirect("/%2F%2Fevil.com")).toBe("/akun");
+  });
+
+  it('memblokir URL-encoded "//" (lowercase) → "/%2f%2fevil.com" → "/akun"', () => {
+    expect(safe_redirect("/%2f%2fevil.com")).toBe("/akun");
+  });
+
+  it('memblokir backslash bypass → "/\\\\evil.com" → "/akun"', () => {
+    expect(safe_redirect("/\\evil.com")).toBe("/akun");
+  });
+
+  it('memblokir whitespace bypass → "/ /evil.com" → "/akun"', () => {
+    expect(safe_redirect("/ /evil.com")).toBe("/akun");
+  });
+
+  it('memperbolehkan path dengan query string → "/akun?tab=x"', () => {
+    expect(safe_redirect("/akun?tab=x")).toBe("/akun?tab=x");
+  });
+
+  it('memperbolehkan path dalam app → "/checkout/abc"', () => {
+    expect(safe_redirect("/checkout/abc")).toBe("/checkout/abc");
+  });
 });
 
 describe("LoginForm", () => {
