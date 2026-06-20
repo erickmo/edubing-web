@@ -6,6 +6,10 @@
  *
  * Protected routes (Checkout, Akun) are wrapped with RequireAuth so
  * unauthenticated visitors are redirected to /masuk.
+ *
+ * SSG loaders:
+ *  - events       → fetchAllEventsAtBuild() inlined into static HTML
+ *  - events/:slug → getStaticPaths + fetchEventAtBuild() per slug
  */
 import type { RouteRecord } from "vite-react-ssg";
 import AppProviders from "./providers/AppProviders";
@@ -17,6 +21,10 @@ import Daftar from "./pages/Daftar";
 import Checkout from "./pages/Checkout";
 import Akun from "./pages/Akun";
 import { RequireAuth } from "./components/RequireAuth";
+import {
+  fetchAllEventsAtBuild,
+  fetchEventAtBuild,
+} from "./lib/build/fetchEventsAtBuild";
 
 export const routes: RouteRecord[] = [
   {
@@ -25,8 +33,27 @@ export const routes: RouteRecord[] = [
     children: [
       // Public — prerenderable
       { index: true, element: <Home /> },
-      { path: "events", element: <Events /> },
-      { path: "events/:slug", element: <EventDetail /> },
+      {
+        path: "events",
+        element: <Events />,
+        loader: async () => {
+          // Only fetch at build time (SSG); at runtime React Query takes over.
+          if (typeof window !== "undefined") return null;
+          return fetchAllEventsAtBuild();
+        },
+      },
+      {
+        path: "events/:slug",
+        element: <EventDetail />,
+        getStaticPaths: async () => {
+          const events = await fetchAllEventsAtBuild();
+          return events.map((e) => `events/${e.route}`);
+        },
+        loader: async ({ params }: { params: Record<string, string | undefined> }) => {
+          if (typeof window !== "undefined") return null;
+          return fetchEventAtBuild(params["slug"] ?? "");
+        },
+      },
       { path: "masuk", element: <Masuk /> },
       { path: "daftar", element: <Daftar /> },
 
