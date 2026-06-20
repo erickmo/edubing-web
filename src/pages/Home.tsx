@@ -7,11 +7,9 @@ import { HowItWorks } from "../components/home/HowItWorks";
 import { FeaturedEvents } from "../components/home/FeaturedEvents";
 import { AppDownload } from "../components/home/AppDownload";
 import { Faq } from "../components/home/Faq";
-import { FAQ_ITEMS } from "../components/home/content";
 import {
   organizationLd,
   websiteLd,
-  faqLd,
   SITE_URL,
 } from "../lib/seo/jsonld";
 
@@ -23,9 +21,11 @@ const PAGE_DESCRIPTION =
 /**
  * Home — public landing page and design-system showcase.
  * Composes the full marketing narrative (Navbar → Hero → ValueProps →
- * HowItWorks → FeaturedEvents → AppDownload → Faq → Footer) and wires
- * Organization/WebSite/FAQPage JSON-LD via <Seo>. FAQ_ITEMS feeds both the
- * visible FAQ and faqLd(), so structured data matches visible content.
+ * HowItWorks → FeaturedEvents → AppDownload → Faq → Footer).
+ *
+ * Organization and WebSite JSON-LD are emitted via <Seo> (rendered in body).
+ * FAQPage JSON-LD is emitted inline by <Faq> itself, matching visible content.
+ * Deduplication: faqLd() is NOT passed to <Seo> to avoid double JSON-LD.
  */
 export default function Home(): JSX.Element {
   return (
@@ -34,7 +34,7 @@ export default function Home(): JSX.Element {
         title={PAGE_TITLE}
         description={PAGE_DESCRIPTION}
         canonical={SITE_URL}
-        jsonLd={[organizationLd(), websiteLd(), faqLd(FAQ_ITEMS)]}
+        jsonLd={[organizationLd(), websiteLd()]}
       />
       <Navbar />
       <main>
