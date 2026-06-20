@@ -30,7 +30,13 @@ export interface PublicEvent {
   /** Price in IDR; 0 means free ("Gratis"). */
   price: number;
   capacity: number;
-  remaining_seats: number;
+  /**
+   * Remaining seats for this event.
+   * - `null`  → unlimited capacity (capacity 0 on the backend); never full.
+   * - `0`     → genuinely FULL; registration must be blocked.
+   * - `N > 0` → N seats still available.
+   */
+  remaining_seats: number | null;
   featured_image: string;
   short_description: string;
 }

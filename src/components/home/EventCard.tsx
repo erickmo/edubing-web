@@ -7,15 +7,15 @@ import {
   EVENT_TYPE_VARIANT,
   formatEventDate,
   formatPrice,
+  is_sold_out,
+  is_seats_low,
+  seats_label,
 } from "./eventFormat";
 
 /** Props for EventCard. */
 export interface EventCardProps {
   event: PublicEvent;
 }
-
-/** Threshold below which we nudge urgency on remaining seats. */
-const LOW_SEATS_THRESHOLD = 10;
 
 /**
  * EventCard — compact upcoming-event tile.
@@ -28,7 +28,8 @@ const LOW_SEATS_THRESHOLD = 10;
  * rather than generating broken /events/undefined links.
  */
 export function EventCard({ event }: EventCardProps): JSX.Element {
-  const seatsLow = event.remaining_seats <= LOW_SEATS_THRESHOLD;
+  const seatsLow = is_seats_low(event.remaining_seats);
+  const soldOut = is_sold_out(event.remaining_seats);
 
   const inner = (
     <div className="flex flex-1 flex-col">
@@ -68,14 +69,14 @@ export function EventCard({ event }: EventCardProps): JSX.Element {
           </span>
           <span
             className={
-              seatsLow
+              soldOut
+                ? "text-xs font-bold text-red-500"
+                : seatsLow
                 ? "text-xs font-bold text-brand-600"
                 : "text-xs font-semibold text-ink-muted"
             }
           >
-            {event.remaining_seats > 0
-              ? `Sisa ${event.remaining_seats} kursi`
-              : "Kursi penuh"}
+            {seats_label(event.remaining_seats)}
           </span>
         </div>
       </div>

@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import type { PublicEvent } from "../../lib/api/events";
-import { formatPrice } from "../home/eventFormat";
+import { formatPrice, is_sold_out, is_seats_low, seats_label } from "../home/eventFormat";
 
 /** Props for RegisterCta. */
 export interface RegisterCtaProps {
@@ -23,7 +23,8 @@ export interface RegisterCtaProps {
  * Disabled state applies when no seats remain.
  */
 export function RegisterCta({ event }: RegisterCtaProps): JSX.Element {
-  const isFull = event.remaining_seats === 0;
+  const isFull = is_sold_out(event.remaining_seats);
+  const isLow = is_seats_low(event.remaining_seats);
 
   return (
     <Card className="p-6">
@@ -51,9 +52,9 @@ export function RegisterCta({ event }: RegisterCtaProps): JSX.Element {
         </Link>
       )}
 
-      {!isFull && event.remaining_seats <= 10 && (
+      {isLow && (
         <p className="mt-2 text-center text-xs font-semibold text-brand-600">
-          Sisa {event.remaining_seats} kursi — segera daftar!
+          {seats_label(event.remaining_seats)} — segera daftar!
         </p>
       )}
     </Card>

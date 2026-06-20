@@ -35,6 +35,53 @@ export function formatEventDate(iso: string): string {
   }).format(date);
 }
 
+// ─── Seat-availability helpers ───────────────────────────────────────────────
+//
+// The backend encodes capacity as:
+//   remaining_seats === null  → unlimited (capacity 0 in Frappe = no limit)
+//   remaining_seats === 0     → genuinely full
+//   remaining_seats > 0       → N seats still available
+//
+// These helpers centralise that contract so no component re-implements it.
+
+/**
+ * Returns `true` only when the event has no seats remaining (`=== 0`).
+ * `null` (unlimited) and any positive number are NOT sold out.
+ */
+export function is_sold_out(remaining_seats: number | null): boolean {
+  return remaining_seats === 0;
+}
+
+/**
+ * Returns `true` when remaining seats are low enough to show urgency styling.
+ * Unlimited capacity (`null`) is never considered "low" — never show urgency.
+ * A genuinely full event (`0`) is handled by `is_sold_out`; it is not "low".
+ */
+export function is_seats_low(
+  remaining_seats: number | null,
+  threshold = LOW_SEATS_THRESHOLD,
+): boolean {
+  return remaining_seats !== null && remaining_seats > 0 && remaining_seats <= threshold;
+}
+
+/** Threshold below which remaining seats trigger urgency/red styling. */
+const LOW_SEATS_THRESHOLD = 10;
+
+/**
+ * Human-readable Bahasa Indonesia label for the remaining-seats state.
+ *
+ * - `null`  → "Kuota tersedia"  (unlimited; no badge clutter, positive signal)
+ * - `0`     → "Kursi penuh"
+ * - `N > 0` → "Sisa N kursi"
+ */
+export function seats_label(remaining_seats: number | null): string {
+  if (remaining_seats === null) return "Kuota tersedia";
+  if (remaining_seats === 0) return "Kursi penuh";
+  return `Sisa ${remaining_seats} kursi`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 /** Format a price as "Gratis" or "Rp250.000". */
 export function formatPrice(price: number): string {
   if (!price || price <= 0) return "Gratis";

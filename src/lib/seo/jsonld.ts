@@ -14,7 +14,13 @@ export interface EventLdInput {
   location?: string;
   price: number;
   event_type: "online" | "offline" | "workshop" | "kompetisi";
-  remaining_seats?: number;
+  /**
+   * `null` = unlimited capacity (always InStock in schema.org terms).
+   * `0`    = sold out (SoldOut).
+   * `N>0`  = N seats remaining (InStock).
+   * `undefined` = not provided; treated as InStock.
+   */
+  remaining_seats?: number | null;
 }
 
 /**
@@ -82,11 +88,14 @@ export function eventLd(event: EventLdInput): object {
         address: event.location ?? "",
       };
 
-  const seatsLeft = event.remaining_seats ?? 0;
+  // null = unlimited capacity → always InStock
+  // 0    = genuinely full → SoldOut
+  // N>0  = seats available → InStock
+  // undefined (not provided) → treat as InStock
   const availability =
-    seatsLeft > 0
-      ? `${SCHEMA}/InStock`
-      : `${SCHEMA}/SoldOut`;
+    event.remaining_seats === 0
+      ? `${SCHEMA}/SoldOut`
+      : `${SCHEMA}/InStock`;
 
   const result: Record<string, unknown> = {
     "@context": SCHEMA,

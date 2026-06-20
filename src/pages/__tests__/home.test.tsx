@@ -38,8 +38,8 @@ const MOCK_EVENTS: PublicEvent[] = [
     end_date: "2025-08-01T11:00:00",
     location: "Online",
     price: 0,
-    capacity: 100,
-    remaining_seats: 42,
+    capacity: 0,
+    remaining_seats: null, // unlimited capacity
     featured_image: "",
     short_description: "Belajar Python dari nol bareng mentor.",
   },
@@ -116,5 +116,13 @@ describe("Home page", () => {
   it("renders the PWA install CTA 'Pasang Aplikasi Web'", () => {
     renderHome();
     expect(screen.getByText(/Pasang Aplikasi Web/i)).toBeInTheDocument();
+  });
+
+  it("unlimited-capacity event shows 'Kuota tersedia', not 'Kursi penuh'", () => {
+    renderHome();
+    // MOCK_EVENTS[0] has remaining_seats: null → must show "Kuota tersedia"
+    expect(screen.getByText(/Kuota tersedia/i)).toBeInTheDocument();
+    // Must NOT show "Kursi penuh" for any event in the current mock set
+    expect(screen.queryByText(/Kursi penuh/i)).not.toBeInTheDocument();
   });
 });

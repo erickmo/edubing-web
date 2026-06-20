@@ -66,6 +66,12 @@ const FULL_EVENT: PublicEvent = {
   remaining_seats: 0,
 };
 
+/** Unlimited-capacity variant (remaining_seats === null). */
+const UNLIMITED_EVENT: PublicEvent = {
+  ...MOCK_EVENTS[0],
+  remaining_seats: null,
+};
+
 // Mock the API module so tests never hit the network.
 // useEvent is wrapped in vi.fn() so individual tests can call mockReturnValueOnce.
 vi.mock("../../lib/api/events", async (importOriginal) => {
@@ -173,5 +179,28 @@ describe("EventDetail page", () => {
     renderPage(<EventDetail />, "/events/webinar-python-dasar");
     const btn = screen.getByRole("button", { name: /kursi penuh/i });
     expect(btn).toBeDisabled();
+  });
+
+  it("unlimited seats (null): CTA enabled + shows 'Daftar Event Ini'", async () => {
+    // Override useEvent so remaining_seats === null (unlimited capacity).
+    const eventsModule = await import("../../lib/api/events");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(eventsModule.useEvent).mockReturnValueOnce({
+      data: UNLIMITED_EVENT,
+      isLoading: false,
+      isError: false,
+      error: null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    // Register link must be present (not replaced by disabled button).
+    expect(
+      screen.getByRole("link", { name: /daftar event ini/i }),
+    ).toBeInTheDocument();
+    // No "Kursi penuh" button should exist.
+    expect(
+      screen.queryByRole("button", { name: /kursi penuh/i }),
+    ).not.toBeInTheDocument();
   });
 });

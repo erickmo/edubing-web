@@ -12,6 +12,9 @@ import {
   EVENT_TYPE_VARIANT,
   formatEventDate,
   formatPrice,
+  is_sold_out,
+  is_seats_low,
+  seats_label,
 } from "../home/eventFormat";
 
 /** Props for EventDetailHero. */
@@ -20,18 +23,13 @@ export interface EventDetailHeroProps {
   event: PublicEvent;
 }
 
-/** Below this threshold remaining seats trigger the "almost full" style. */
-const LOW_SEATS_THRESHOLD = 10;
-
 /**
  * Renders the full-width hero panel for an event detail page.
  * Kept under 40 LOC of JSX — layout only, no side-effects.
  */
 export function EventDetailHero({ event }: EventDetailHeroProps): JSX.Element {
-  const seatsLow =
-    event.remaining_seats > 0 &&
-    event.remaining_seats <= LOW_SEATS_THRESHOLD;
-  const seatsFull = event.remaining_seats === 0;
+  const seatsLow = is_seats_low(event.remaining_seats);
+  const seatsFull = is_sold_out(event.remaining_seats);
 
   const dateRange =
     formatEventDate(event.start_date) !== formatEventDate(event.end_date)
@@ -97,7 +95,9 @@ export function EventDetailHero({ event }: EventDetailHeroProps): JSX.Element {
               ].join(" ")}
             >
               {seatsFull
-                ? "Kursi penuh"
+                ? seats_label(event.remaining_seats)
+                : event.remaining_seats === null
+                ? "Tak terbatas"
                 : `${event.remaining_seats} dari ${event.capacity}`}
             </dd>
           </div>
