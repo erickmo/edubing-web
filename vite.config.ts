@@ -47,6 +47,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5174,
+    // Allow Cloudflare quick-tunnel hosts to reach the dev server (dev-only).
+    allowedHosts: [".trycloudflare.com"],
     proxy: {
       "/api": { target: API_TARGET, changeOrigin: true, configure: rewriteHost },
       // Frappe static assets (also Host-routed)

@@ -21,10 +21,10 @@ import Daftar from "./pages/Daftar";
 import Checkout from "./pages/Checkout";
 import Akun from "./pages/Akun";
 import { RequireAuth } from "./components/RequireAuth";
-import {
-  fetchAllEventsAtBuild,
-  fetchEventAtBuild,
-} from "./lib/build/fetchEventsAtBuild";
+// NOTE: ./lib/build/fetchEventsAtBuild is Node-only (uses node:http + process.env).
+// It is dynamically imported ONLY inside build-time paths (getStaticPaths / SSG
+// loaders) so it never enters the client bundle — a static import here would
+// evaluate `process.env` in the browser and crash the app (blank page).
 
 export const routes: RouteRecord[] = [
   {
@@ -39,6 +39,7 @@ export const routes: RouteRecord[] = [
         loader: async () => {
           // Only fetch at build time (SSG); at runtime React Query takes over.
           if (typeof window !== "undefined") return null;
+          const { fetchAllEventsAtBuild } = await import("./lib/build/fetchEventsAtBuild");
           return fetchAllEventsAtBuild();
         },
       },
@@ -46,6 +47,8 @@ export const routes: RouteRecord[] = [
         path: "events/:slug",
         element: <EventDetail />,
         getStaticPaths: async () => {
+          // Build-only: dynamic import keeps the Node module out of the client.
+          const { fetchAllEventsAtBuild } = await import("./lib/build/fetchEventsAtBuild");
           const events = await fetchAllEventsAtBuild();
           // Filter out events without a route slug so we never generate a
           // broken path like "events/undefined" or "events/".
@@ -55,6 +58,7 @@ export const routes: RouteRecord[] = [
         },
         loader: async ({ params }: { params: Record<string, string | undefined> }) => {
           if (typeof window !== "undefined") return null;
+          const { fetchEventAtBuild } = await import("./lib/build/fetchEventsAtBuild");
           return fetchEventAtBuild(params["slug"] ?? "");
         },
       },

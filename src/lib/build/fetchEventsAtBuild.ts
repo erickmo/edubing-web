@@ -21,16 +21,22 @@ import * as http from "node:http";
 import * as https from "node:https";
 import type { PublicEvent } from "../api/events";
 
+/**
+ * Read an env var safely. This module is Node-only, but guard `process` so an
+ * accidental browser import never throws "process is not defined" at eval time.
+ */
+function readEnv(key: string): string | undefined {
+  return typeof process !== "undefined" ? process.env?.[key] : undefined;
+}
+
 /** Base URL for direct backend access at build time (no Vite proxy). */
-const BUILD_API_URL =
-  process.env.VITE_BUILD_API_URL ?? "http://localhost:8080";
+const BUILD_API_URL = readEnv("VITE_BUILD_API_URL") ?? "http://localhost:8080";
 
 /**
  * Host header injected into every request so Frappe's multisite router
  * selects the correct site.
  */
-const SITE_HOST =
-  process.env.VITE_FRAPPE_SITE_HOST ?? "edubing.localhost";
+const SITE_HOST = readEnv("VITE_FRAPPE_SITE_HOST") ?? "edubing.localhost";
 
 /** Frappe whitelisted method — public event list. */
 const METHOD_LIST = "vernon_edubing.eb_event.api.public.list_events";
