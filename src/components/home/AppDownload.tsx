@@ -1,4 +1,5 @@
 import { Button } from "../ui/Button";
+import { PORTAL_URL } from "../../lib/config";
 
 /**
  * Deep link to the installable PWA, which lives on the student PORTAL origin.
@@ -6,9 +7,9 @@ import { Button } from "../ui/Button";
  * origin, so this CTA simply deep-links the user to the portal where the
  * browser's native install prompt is available.
  *
- * TODO(prod): replace with the real portal URL (e.g. https://app.edubing.id/student).
+ * URL dikontrol oleh env var `VITE_PORTAL_URL` (lihat `.env.example`).
  */
-export const PWA_INSTALL_URL = "https://edubing.localhost/student";
+export const PWA_INSTALL_URL = PORTAL_URL;
 
 /** App-store badge placeholders — not yet live ("Segera hadir"). */
 const STORE_BADGES = [

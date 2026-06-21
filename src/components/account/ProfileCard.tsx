@@ -7,10 +7,10 @@
 import { Card, CardHeader, CardContent } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import type { DashboardData } from "../../lib/api/account";
+import { PORTAL_URL } from "../../lib/config";
 
-/** URL portal siswa lengkap (manajemen konten & langganan). */
-export const PORTAL_URL =
-  "https://edubing.localhost/student"; // TODO: ganti ke URL prod
+/** URL portal siswa lengkap (manajemen konten & langganan). Dikontrol via `VITE_PORTAL_URL`. */
+export { PORTAL_URL };
 
 /** Props untuk ProfileCard. */
 export interface ProfileCardProps {
