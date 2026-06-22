@@ -76,7 +76,7 @@ export function EventQuickFacts({ event }: EventQuickFactsProps): JSX.Element {
               <dt className="text-xs font-bold uppercase tracking-wide text-ink-muted">
                 {fact.label}
               </dt>
-              <dd className="text-sm font-semibold text-ink">{fact.value}</dd>
+              <dd className="line-clamp-2 text-sm font-semibold text-ink">{fact.value}</dd>
             </div>
           </div>
         ))}

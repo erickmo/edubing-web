@@ -16,9 +16,7 @@ export interface EventAgendaProps {
 
 /** Resolve a human location hint for a session row. */
 function sessionLocationLabel(session: EventSession): string {
-  if (session.location) return session.location;
-  if (session.meeting_link) return "Online";
-  return "Online";
+  return session.location ?? "Online";
 }
 
 /**

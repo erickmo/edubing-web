@@ -52,16 +52,28 @@ export function EventShare({ url, title }: EventShareProps): JSX.Element {
     <Card className="p-6">
       <h2 className="font-display text-base font-bold text-ink">Bagikan</h2>
       <div className="mt-4 flex flex-wrap gap-2">
-        <a href={waHref} target="_blank" rel="noopener noreferrer" className="flex-1">
-          <Button variant="soft" size="sm" className="w-full">
+        <Button
+          asChild
+          variant="soft"
+          size="sm"
+          className="flex-1"
+          aria-label="Bagikan via WhatsApp"
+        >
+          <a href={waHref} target="_blank" rel="noopener noreferrer">
             WhatsApp
-          </Button>
-        </a>
-        <a href={xHref} target="_blank" rel="noopener noreferrer" className="flex-1">
-          <Button variant="soft" size="sm" className="w-full">
+          </a>
+        </Button>
+        <Button
+          asChild
+          variant="soft"
+          size="sm"
+          className="flex-1"
+          aria-label="Bagikan via X (Twitter)"
+        >
+          <a href={xHref} target="_blank" rel="noopener noreferrer">
             X
-          </Button>
-        </a>
+          </a>
+        </Button>
       </div>
       <Button
         type="button"
