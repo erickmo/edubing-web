@@ -12,6 +12,13 @@ const METHOD_LOGOUT = "logout";
 const METHOD_GET_LOGGED_USER = "frappe.auth.get_logged_user";
 const METHOD_GET_CSRF = "vernon_edubing.eb_student.api.auth.get_csrf";
 const METHOD_REGISTER = "vernon_edubing.eb_student.api.auth.register";
+const METHOD_WHOAMI = "vernon_edubing.eb_student.api.auth.whoami";
+
+/** Current session identity (guest-safe). */
+export interface WhoamiResult {
+  user: string; // "Guest" when not logged in
+  student: string | null; // EB Student Profile name, or null
+}
 
 /**
  * Log in with email/password.
@@ -65,4 +72,14 @@ export async function getLoggedUser(): Promise<string> {
 export async function getCsrf(): Promise<string> {
   const result = await frappeCall<{ csrf_token: string }>(METHOD_GET_CSRF);
   return result.csrf_token;
+}
+
+/**
+ * Guest-safe session probe — returns the current user + linked student.
+ * Use for hydration on load: unlike frappe.auth.get_logged_user (not
+ * guest-allowed → 403 noise for anonymous visitors), this is guest-allowed
+ * and returns { user: "Guest", student: null } for anonymous sessions.
+ */
+export async function whoami(): Promise<WhoamiResult> {
+  return frappeCall<WhoamiResult>(METHOD_WHOAMI, undefined, { method: "GET" });
 }

@@ -6,15 +6,15 @@
  *
  * Behaviour:
  *   1. If the store status is not "loading", do nothing (already resolved).
- *   2. Call getLoggedUser() from Frappe.
- *   3. If a real email is returned (not "Guest"):
+ *   2. Call whoami() — a guest-safe probe (no 403 for anonymous visitors,
+ *      unlike frappe.auth.get_logged_user).
+ *   3. If a real user is returned (not "Guest"):
  *      - Fetch a CSRF token via getCsrf().
- *      - Store the session via set_session(user, null, csrf).
- *      - set_status("authed").
+ *      - Store the session via set_session(user, student, csrf).
  *   4. If "Guest" or an error occurs: set_status("guest").
  */
 import { useEffect } from "react";
-import { getLoggedUser, getCsrf } from "../lib/frappe/auth";
+import { whoami, getCsrf } from "../lib/frappe/auth";
 import { useSession } from "../store/session";
 
 /**
@@ -36,13 +36,13 @@ export function useHydrateSession(): void {
 
     async function hydrate() {
       try {
-        const user = await getLoggedUser();
+        const { user, student } = await whoami();
         if (cancelled) return;
 
         if (user && user !== "Guest") {
           const csrf = await getCsrf();
           if (cancelled) return;
-          set_session(user, null, csrf);
+          set_session(user, student, csrf);
         } else {
           set_status("guest");
         }
