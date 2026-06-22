@@ -91,3 +91,62 @@ export function formatPrice(price: number): string {
     maximumFractionDigits: 0,
   }).format(price);
 }
+
+/**
+ * Split a multi-line text block into clean, trimmed, non-empty lines.
+ *
+ * Backend list fields (what_you_get, requirements) arrive as a single string
+ * with one item per line. Empty/whitespace-only lines are dropped so a
+ * trailing newline never renders a blank bullet.
+ *
+ * @param text - Raw newline-separated string (or null/undefined).
+ * @returns Array of trimmed, non-empty lines; `[]` when there is nothing.
+ */
+export function splitLines(text?: string | null): string[] {
+  if (!text) return [];
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+/** Format an ISO date-time as "12 Agu 2025, 09:00" (date + 24h time). */
+export function formatEventDateTime(iso: string): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+/**
+ * Human-readable Bahasa duration between two ISO date-times.
+ *
+ * Returns "" when either bound is missing/invalid or the span is non-positive.
+ * Uses days when ≥ 24h, otherwise hours and minutes (e.g. "2 jam 30 menit").
+ *
+ * @param startIso - ISO start date-time.
+ * @param endIso - ISO end date-time.
+ */
+export function formatDuration(startIso: string, endIso: string): string {
+  if (!startIso || !endIso) return "";
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return "";
+
+  const totalMinutes = Math.round((end - start) / 60000);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  if (days >= 1) return `${days} hari`;
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours} jam`);
+  if (minutes > 0) parts.push(`${minutes} menit`);
+  return parts.join(" ");
+}

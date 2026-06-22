@@ -1,8 +1,10 @@
 /**
- * EventDetailHero — above-the-fold hero section for the /events/:slug page.
+ * EventDetailHero — above-the-fold hero band for the /events/:slug page.
  *
- * Displays: cover image (or gradient fallback), type badge, title, date
- * range, location or meeting-link info, price, and remaining-seat count.
+ * Background is the cover image (dimmed) when present, else the brand→teal
+ * gradient fallback. Shows the type badge, title, short description, and a
+ * single-line meta row: 📅 date · 📍 location|"Online". Detailed facts
+ * (price, seats, duration) live in EventQuickFacts, not here.
  */
 
 import { Badge } from "../ui/Badge";
@@ -11,10 +13,6 @@ import {
   EVENT_TYPE_LABEL,
   EVENT_TYPE_VARIANT,
   formatEventDate,
-  formatPrice,
-  is_sold_out,
-  is_seats_low,
-  seats_label,
 } from "../home/eventFormat";
 
 /** Props for EventDetailHero. */
@@ -23,18 +21,21 @@ export interface EventDetailHeroProps {
   event: PublicEvent;
 }
 
+/** Build the date range, collapsing to a single date when start === end. */
+function dateRangeLabel(event: PublicEvent): string {
+  const start = formatEventDate(event.start_date);
+  const end = formatEventDate(event.end_date);
+  return start && end && start !== end ? `${start} – ${end}` : start;
+}
+
 /**
  * Renders the full-width hero panel for an event detail page.
- * Kept under 40 LOC of JSX — layout only, no side-effects.
+ * Layout-only, no side-effects.
  */
 export function EventDetailHero({ event }: EventDetailHeroProps): JSX.Element {
-  const seatsLow = is_seats_low(event.remaining_seats);
-  const seatsFull = is_sold_out(event.remaining_seats);
-
-  const dateRange =
-    formatEventDate(event.start_date) !== formatEventDate(event.end_date)
-      ? `${formatEventDate(event.start_date)} – ${formatEventDate(event.end_date)}`
-      : formatEventDate(event.start_date);
+  const isOnline = event.event_type === "online";
+  const placeLabel = isOnline ? "Online" : event.location || "Akan diumumkan";
+  const dateRange = dateRangeLabel(event);
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-brand-600 to-teal-500 text-white">
@@ -45,63 +46,32 @@ export function EventDetailHero({ event }: EventDetailHeroProps): JSX.Element {
           className="absolute inset-0 h-full w-full object-cover opacity-25"
         />
       )}
+      {/* Dotted texture overlay for depth on the gradient fallback. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-grid-dots bg-dots opacity-30"
+      />
 
-      <div className="relative mx-auto max-w-4xl px-6 py-14">
+      <div className="relative mx-auto max-w-5xl px-4 py-14 sm:px-6">
         <Badge variant={EVENT_TYPE_VARIANT[event.event_type]} className="mb-4">
           {EVENT_TYPE_LABEL[event.event_type]}
         </Badge>
 
-        <h1 className="font-display text-3xl font-black leading-tight sm:text-4xl">
+        <h1 className="max-w-3xl font-display text-3xl font-black leading-tight sm:text-4xl lg:text-5xl">
           {event.title}
         </h1>
 
         {event.short_description && (
-          <p className="mt-3 max-w-2xl text-base text-white/80">
+          <p className="mt-3 max-w-2xl text-base text-white/85 sm:text-lg">
             {event.short_description}
           </p>
         )}
 
-        <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-          <div>
-            <dt className="text-xs font-bold uppercase tracking-wide text-white/60">
-              Tanggal
-            </dt>
-            <dd className="text-sm font-semibold">{dateRange}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-bold uppercase tracking-wide text-white/60">
-              {event.event_type === "online" ? "Tautan Meeting" : "Lokasi"}
-            </dt>
-            <dd className="text-sm font-semibold">{event.location || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-bold uppercase tracking-wide text-white/60">
-              Harga
-            </dt>
-            <dd className="text-sm font-semibold">{formatPrice(event.price)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-bold uppercase tracking-wide text-white/60">
-              Kursi Tersisa
-            </dt>
-            <dd
-              className={[
-                "text-sm font-semibold",
-                seatsFull
-                  ? "text-red-300"
-                  : seatsLow
-                  ? "text-sun"
-                  : "text-white",
-              ].join(" ")}
-            >
-              {seatsFull
-                ? seats_label(event.remaining_seats)
-                : event.remaining_seats === null
-                ? "Tak terbatas"
-                : `${event.remaining_seats} dari ${event.capacity}`}
-            </dd>
-          </div>
-        </dl>
+        <p className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-white/90">
+          {dateRange && <span>📅 {dateRange}</span>}
+          {dateRange && <span aria-hidden="true" className="text-white/50">·</span>}
+          <span>📍 {placeLabel}</span>
+        </p>
       </div>
     </section>
   );

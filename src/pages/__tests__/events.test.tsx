@@ -8,6 +8,8 @@
  *  4. EventDetail emits "@type":"Event" JSON-LD in a script tag
  *  5. "Daftar Event Ini" links to /checkout/<slug>
  *  6. EventDetail full-seats: remaining_seats === 0 → CTA disabled + "Kursi penuh"
+ *  7. EventDetail rich sections: description_rich, what_you_get, sessions,
+ *     requirements, kompetisi info, organizer, quick-facts, share, related.
  */
 
 import type { ReactNode } from "react";
@@ -70,6 +72,36 @@ const FULL_EVENT: PublicEvent = {
 const UNLIMITED_EVENT: PublicEvent = {
   ...MOCK_EVENTS[0],
   remaining_seats: null,
+};
+
+/**
+ * Rich detail variant — populated with every optional detail-only field so
+ * EventDetail's conditional sections all render. Mirrors the real
+ * get_event payload shape (newline-joined lists, sessions array, HTML body).
+ */
+const RICH_EVENT: PublicEvent = {
+  ...MOCK_EVENTS[0],
+  event_type: "kompetisi",
+  category_info: "Lomba tingkat nasional untuk pelajar SMA/SMK.",
+  description_rich:
+    "<p>Deskripsi <strong>lengkap</strong> kompetisi dengan format kaya.</p>",
+  what_you_get: "Sertifikat resmi\nMateri eksklusif\nAkses komunitas",
+  requirements: "Laptop sendiri\nKoneksi internet stabil",
+  organizer: "Tim Edubing",
+  sessions: [
+    {
+      session_title: "Babak Penyisihan",
+      session_date: "2025-08-01T09:00:00",
+      meeting_link: null,
+      location: "Online",
+    },
+    {
+      session_title: "Babak Final",
+      session_date: "2025-08-15T09:00:00",
+      meeting_link: null,
+      location: "Jakarta",
+    },
+  ],
 };
 
 // Mock the API module so tests never hit the network.
@@ -202,5 +234,104 @@ describe("EventDetail page", () => {
     expect(
       screen.queryByRole("button", { name: /kursi penuh/i }),
     ).not.toBeInTheDocument();
+  });
+});
+
+// ─── EventDetail rich sections ───────────────────────────────────────────────
+
+/** Override useEvent to return the given event for one render. */
+async function mockEventOnce(event: PublicEvent): Promise<void> {
+  const eventsModule = await import("../../lib/api/events");
+  vi.mocked(eventsModule.useEvent).mockReturnValueOnce({
+    data: event,
+    isLoading: false,
+    isError: false,
+    error: null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
+}
+
+describe("EventDetail rich detail sections", () => {
+  it("renders the rich description text", async () => {
+    await mockEventOnce(RICH_EVENT);
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    expect(screen.getByText(/Deskripsi/i)).toBeInTheDocument();
+    expect(screen.getByText(/lengkap/i)).toBeInTheDocument();
+  });
+
+  it("renders all what_you_get items as a list", async () => {
+    await mockEventOnce(RICH_EVENT);
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    expect(screen.getByText("Sertifikat resmi")).toBeInTheDocument();
+    expect(screen.getByText("Materi eksklusif")).toBeInTheDocument();
+    expect(screen.getByText("Akses komunitas")).toBeInTheDocument();
+    // Heading present.
+    expect(screen.getByText(/Apa yang Kamu Dapat/i)).toBeInTheDocument();
+  });
+
+  it("renders both session titles in the agenda", async () => {
+    await mockEventOnce(RICH_EVENT);
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    expect(screen.getByText("Babak Penyisihan")).toBeInTheDocument();
+    expect(screen.getByText("Babak Final")).toBeInTheDocument();
+    expect(screen.getByText(/Jadwal & Agenda/i)).toBeInTheDocument();
+  });
+
+  it("renders requirements items", async () => {
+    await mockEventOnce(RICH_EVENT);
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    expect(screen.getByText("Laptop sendiri")).toBeInTheDocument();
+    expect(screen.getByText("Koneksi internet stabil")).toBeInTheDocument();
+    expect(screen.getByText(/Persyaratan/i)).toBeInTheDocument();
+  });
+
+  it("renders kompetisi info and organizer", async () => {
+    await mockEventOnce(RICH_EVENT);
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    // category_info appears in both the "Informasi Kompetisi" section and the
+    // quick-facts "Kategori" row — both are intended for a kompetisi event.
+    expect(
+      screen.getAllByText(/Lomba tingkat nasional/i).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText(/Penyelenggara/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Tim Edubing/i).length).toBeGreaterThan(0);
+  });
+
+  it("renders quick-facts with the event type", async () => {
+    await mockEventOnce(RICH_EVENT);
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    // Quick-facts heading + the kompetisi type label appears.
+    expect(screen.getByText(/Fakta Singkat/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Kompetisi/i).length).toBeGreaterThan(0);
+  });
+
+  it("renders share controls (Bagikan + Salin tautan)", async () => {
+    await mockEventOnce(RICH_EVENT);
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    expect(screen.getByText(/Bagikan/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /salin tautan/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("omits optional sections when their data is absent", () => {
+    // Default mock returns MOCK_EVENTS[0], which has no detail fields.
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    expect(screen.queryByText(/Apa yang Kamu Dapat/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Jadwal & Agenda/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Persyaratan/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Penyelenggara/i)).not.toBeInTheDocument();
+  });
+});
+
+// ─── RelatedEvents ───────────────────────────────────────────────────────────
+
+describe("EventDetail related events", () => {
+  it('shows "Event Lainnya" with the other event when more exist', () => {
+    // Default mock returns the current event (webinar-python-dasar);
+    // useEvents returns both MOCK_EVENTS, so the OTHER one is related.
+    renderPage(<EventDetail />, "/events/webinar-python-dasar");
+    expect(screen.getByText(/Event Lainnya/i)).toBeInTheDocument();
+    expect(screen.getByText("Workshop Desain UI")).toBeInTheDocument();
   });
 });

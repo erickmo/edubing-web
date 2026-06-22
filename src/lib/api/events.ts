@@ -12,6 +12,22 @@ import { frappeCall } from "../frappe/client";
 export type EventType = "online" | "offline" | "workshop" | "kompetisi";
 
 /**
+ * One agenda/session row within an event. Detail-only — present only in the
+ * `get_event` payload (never in the list endpoint). All fields optional so a
+ * partially-filled session never breaks rendering.
+ */
+export interface EventSession {
+  /** Session heading (e.g. "Babak Penyisihan"). */
+  session_title?: string;
+  /** ISO date-time string for this session; null when not scheduled. */
+  session_date?: string | null;
+  /** Online meeting URL; null for in-person or unset. */
+  meeting_link?: string | null;
+  /** Venue label; null for online or unset. */
+  location?: string | null;
+}
+
+/**
  * Public-facing event record returned by the Frappe public API.
  * Keys are snake_case to match the server payload verbatim.
  */
@@ -41,6 +57,26 @@ export interface PublicEvent {
   featured_image: string | null;
   /** Brief description; null when the API returns null (not yet set). */
   short_description: string | null;
+
+  // ── Detail-only fields ──────────────────────────────────────────────────
+  // Present ONLY in the get_event payload, never in list_events. Typed
+  // optional so list-derived `PublicEvent`s (EventCard, RelatedEvents) stay
+  // valid without these keys.
+
+  /** Free-form kompetisi/category note shown in "Informasi Kompetisi". */
+  category_info?: string | null;
+  /** Admin-authored HTML body for "Tentang Event" (trusted source). */
+  description_rich?: string | null;
+  /** Newline-separated benefits list ("Apa yang Kamu Dapat"). */
+  what_you_get?: string | null;
+  /** Newline-separated requirements list ("Persyaratan"). */
+  requirements?: string | null;
+  /** Organizer name shown in "Penyelenggara". */
+  organizer?: string | null;
+  /** Top-level meeting link (online events). */
+  meeting_link?: string | null;
+  /** Agenda rows for "Jadwal & Agenda". */
+  sessions?: EventSession[];
 }
 
 const METHOD_LIST = "vernon_edubing.eb_event.api.public.list_events";
