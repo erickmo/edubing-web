@@ -2,13 +2,27 @@
  * RegistrationCard — satu baris registrasi event di halaman Akun.
  *
  * Menampilkan judul event, tanggal, badge status registrasi,
- * status pembayaran, tombol Batalkan, dan link Lanjutkan pembayaran.
+ * status pembayaran, tombol Batalkan, link Lanjutkan pembayaran,
+ * tombol Check-in (jika window terbuka), dan tombol Beri Feedback.
+ *
+ * Prioritas aksi (dari atas):
+ * 1. Check-in (Registered + window terbuka)
+ * 2. Beri Feedback / Feedback terkirim (Attended)
+ * 3. Lanjutkan pembayaran (Pending + order Pending)
+ * 4. Batalkan (Registered | Pending)
  */
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { formatEventDate } from "../home/eventFormat";
-import type { RegistrationRow } from "../../lib/api/account";
+import { FeedbackForm } from "./FeedbackForm";
+import {
+  is_checkin_open,
+  useCheckin,
+  type RegistrationRow,
+} from "../../lib/api/account";
+import { FrappeError } from "../../lib/frappe/client";
 
 // ─── Pemetaan badge status registrasi ────────────────────────────────────────
 
@@ -56,6 +70,11 @@ export interface RegistrationCardProps {
   isCancelling: boolean;
 }
 
+// ─── Konstanta ────────────────────────────────────────────────────────────────
+
+/** Label untuk status "Feedback terkirim". */
+const LABEL_FEEDBACK_SENT = "Feedback terkirim ✓";
+
 // ─── Sub-komponen ─────────────────────────────────────────────────────────────
 
 /** Judul event dengan link jika route tersedia, atau teks biasa. */
@@ -75,7 +94,7 @@ function CardTitle({ row }: { row: RegistrationRow }): JSX.Element {
         </span>
       )}
       <p className="mt-1 text-sm text-ink-soft">
-        {formatEventDate(row.start_date)}
+        {row.start_date ? formatEventDate(row.start_date) : ""}
       </p>
     </div>
   );
@@ -156,18 +175,41 @@ function ActionButtons({
 
 /**
  * Kartu satu registrasi: judul, tanggal, badge status,
- * status pembayaran, tombol batalkan, dan link lanjutkan.
+ * status pembayaran, check-in, feedback, tombol batalkan, dan link lanjutkan.
  */
 export function RegistrationCard({
   row,
   onCancel,
   isCancelling,
 }: RegistrationCardProps): JSX.Element {
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+
   const canCancel = CANCELLABLE_STATUSES.includes(row.status);
   const showContinue =
     row.status === "Pending" &&
     row.order_status === "Pending" &&
     Boolean(row.event_route);
+
+  const showCheckin =
+    row.status === "Registered" &&
+    is_checkin_open(row.start_date, row.end_date ?? null, new Date());
+
+  const showFeedbackButton =
+    row.status === "Attended" && !row.has_feedback && !showFeedbackForm;
+  const showFeedbackSent = row.status === "Attended" && row.has_feedback;
+
+  const {
+    mutate: checkinMutate,
+    isPending: isCheckinPending,
+    error: checkinError,
+  } = useCheckin();
+
+  const checkinErrorMsg =
+    checkinError instanceof FrappeError
+      ? checkinError.message
+      : checkinError instanceof Error
+      ? checkinError.message
+      : null;
 
   function handleCancel() {
     const ok = window.confirm(
@@ -186,6 +228,47 @@ export function RegistrationCard({
           <StatusBadge status={row.status} />
         </div>
         <PaymentStatus orderStatus={row.order_status} />
+
+        {/* Check-in action */}
+        {showCheckin && (
+          <div className="mt-4">
+            <Button
+              size="sm"
+              onClick={() => checkinMutate(row.registration)}
+              disabled={isCheckinPending}
+            >
+              {isCheckinPending ? "Memproses…" : "Check-in / Hadir"}
+            </Button>
+            {checkinErrorMsg && (
+              <p className="mt-2 text-sm text-red-600">{checkinErrorMsg}</p>
+            )}
+          </div>
+        )}
+
+        {/* Feedback actions */}
+        {showFeedbackButton && (
+          <div className="mt-4">
+            <Button
+              variant="soft"
+              size="sm"
+              onClick={() => setShowFeedbackForm(true)}
+            >
+              Beri Feedback
+            </Button>
+          </div>
+        )}
+        {showFeedbackForm && (
+          <FeedbackForm
+            registration={row.registration}
+            onDone={() => setShowFeedbackForm(false)}
+          />
+        )}
+        {showFeedbackSent && (
+          <p className="mt-3 text-sm font-semibold text-green-600">
+            {LABEL_FEEDBACK_SENT}
+          </p>
+        )}
+
         <ActionButtons
           row={row}
           canCancel={canCancel}
