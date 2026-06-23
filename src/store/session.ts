@@ -50,6 +50,14 @@ export const useSession = create<SessionState>()(
         set({ status });
       },
     }),
-    { name: STORAGE_KEY },
+    {
+      name: STORAGE_KEY,
+      // On a full page load the persisted state rehydrates, but the client-side
+      // CSRF token (a module var in frappeCall) starts null — without this, every
+      // authed POST after a refresh/direct-load fails CSRF. Restore it here.
+      onRehydrateStorage: () => (state) => {
+        if (state?.csrf_token) setCsrfToken(state.csrf_token);
+      },
+    },
   ),
 );
