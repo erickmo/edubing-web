@@ -120,7 +120,7 @@ export function FeedbackForm({
       />
 
       {errorMsg && (
-        <p className="mt-2 text-sm text-red-600">{errorMsg}</p>
+        <p role="alert" className="mt-2 text-sm text-red-600">{errorMsg}</p>
       )}
 
       <div className="mt-3 flex gap-2">

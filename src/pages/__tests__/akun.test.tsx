@@ -141,7 +141,7 @@ const ROW_REGISTERED_OPEN: RegistrationRow = {
   ...ROW_REGISTERED,
   registration: "REG-006",
   event_title: "Workshop Check-in Terbuka",
-  start_date: null as unknown as string,
+  start_date: null,
   end_date: null,
 };
 

@@ -240,7 +240,7 @@ export function RegistrationCard({
               {isCheckinPending ? "Memproses…" : "Check-in / Hadir"}
             </Button>
             {checkinErrorMsg && (
-              <p className="mt-2 text-sm text-red-600">{checkinErrorMsg}</p>
+              <p role="alert" className="mt-2 text-sm text-red-600">{checkinErrorMsg}</p>
             )}
           </div>
         )}

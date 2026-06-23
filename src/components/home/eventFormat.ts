@@ -3,6 +3,7 @@
  * Kept separate so both FeaturedEvents and the future Events list can reuse them.
  */
 import type { EventType } from "../../lib/api/events";
+import { parse_frappe_date } from "../../lib/date";
 
 /** Human-readable Bahasa label per event_type. */
 export const EVENT_TYPE_LABEL: Record<EventType, string> = {
@@ -23,11 +24,11 @@ export const EVENT_TYPE_VARIANT: Record<
   kompetisi: "ink",
 };
 
-/** Format an ISO date as "12 Agu 2025" in Bahasa Indonesia. */
+/** Format an ISO date or Frappe date string as "12 Agu 2025" in Bahasa Indonesia. */
 export function formatEventDate(iso: string): string {
   if (!iso) return "";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = parse_frappe_date(iso);
+  if (date === null) return "";
   return new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
     month: "short",
@@ -110,11 +111,11 @@ export function splitLines(text?: string | null): string[] {
     .filter((line) => line.length > 0);
 }
 
-/** Format an ISO date-time as "12 Agu 2025, 09:00" (date + 24h time). */
+/** Format an ISO date-time or Frappe datetime string as "12 Agu 2025, 09:00" (date + 24h time). */
 export function formatEventDateTime(iso: string): string {
   if (!iso) return "";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = parse_frappe_date(iso);
+  if (date === null) return "";
   return new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
     month: "short",
@@ -135,9 +136,12 @@ export function formatEventDateTime(iso: string): string {
  */
 export function formatDuration(startIso: string, endIso: string): string {
   if (!startIso || !endIso) return "";
-  const start = new Date(startIso).getTime();
-  const end = new Date(endIso).getTime();
-  if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return "";
+  const startDate = parse_frappe_date(startIso);
+  const endDate = parse_frappe_date(endIso);
+  if (startDate === null || endDate === null) return "";
+  const start = startDate.getTime();
+  const end = endDate.getTime();
+  if (end <= start) return "";
 
   const totalMinutes = Math.round((end - start) / 60000);
   const days = Math.floor(totalMinutes / (60 * 24));

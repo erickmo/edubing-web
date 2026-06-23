@@ -11,6 +11,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { frappeCall } from "../frappe/client";
+import { parse_frappe_date } from "../date";
 
 // ─── Tipe API ─────────────────────────────────────────────────────────────────
 
@@ -90,12 +91,15 @@ export const accountKeys = {
  * Periksa apakah jendela check-in sedang terbuka.
  *
  * Aturan:
- * - Jika start_date null → selalu terbuka (true).
- * - Jika end_date null → window = start hingga start + 6 jam.
+ * - Jika start_date null atau tidak valid → selalu terbuka (true).
+ * - Jika end_date null atau tidak valid → window = start hingga start + 6 jam.
  * - Terbuka ketika start <= now <= end.
  *
- * @param start_date - ISO date-time mulai event; null = selalu terbuka.
- * @param end_date   - ISO date-time selesai event; null = start + 6 jam.
+ * Menggunakan parse_frappe_date agar string "YYYY-MM-DD HH:MM:SS" dari Frappe
+ * diparse dengan benar di Safari/WebKit (new Date("...spasi...") → NaN di Safari).
+ *
+ * @param start_date - Frappe datetime mulai event; null/invalid = selalu terbuka.
+ * @param end_date   - Frappe datetime selesai event; null/invalid = start + 6 jam.
  * @param now        - Waktu saat ini (dapat di-inject untuk pengujian).
  */
 export function is_checkin_open(
@@ -103,11 +107,11 @@ export function is_checkin_open(
   end_date: string | null,
   now: Date,
 ): boolean {
-  if (start_date === null) return true;
-  const start = new Date(start_date).getTime();
-  const end = end_date
-    ? new Date(end_date).getTime()
-    : start + CHECKIN_DEFAULT_WINDOW_MS;
+  const startDate = parse_frappe_date(start_date);
+  if (startDate === null) return true;
+  const start = startDate.getTime();
+  const endDate = parse_frappe_date(end_date);
+  const end = endDate !== null ? endDate.getTime() : start + CHECKIN_DEFAULT_WINDOW_MS;
   const ts = now.getTime();
   return ts >= start && ts <= end;
 }
